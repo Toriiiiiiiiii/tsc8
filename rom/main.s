@@ -21,7 +21,9 @@ noprg:  lda #<noprg_msg
 		sta $0003
 		jsr puts
 
-halt:	jmp halt
+halt:	lda $8001
+		sta $8000
+		jmp halt
 
 puts:   ; Prints a string to serial terminal.
 		; Pointer to the string should be stored at $0002

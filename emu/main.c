@@ -15,6 +15,8 @@
 #define RAM_BASE 0x0000
 #define ROM_BASE 0xe000
 
+#define KEYB_BUFSIZE 256
+
 static uint8_t RAM[RAM_SIZE] = {0};
 static uint8_t ROM[ROM_SIZE] = {0};
 static MCS6502ExecutionContext context;
@@ -23,12 +25,23 @@ static int running = 1;
 static volatile int cpuLock = 0;
 static int enableCPU = 0;
 
+static uint8_t keyb[KEYB_BUFSIZE] = {0};
+static uint8_t keyb_front = 0;
+static uint8_t keyb_back = 0;
+
 uint8_t readByte(uint16_t addr, void *ctx) {
 	if(RAM_BASE <= addr && addr < RAM_BASE+RAM_SIZE) 
 		return RAM[addr];
 
 	if(ROM_BASE <= addr && addr < ROM_BASE+ROM_SIZE)
 		return ROM[addr & 0b0001111111111111];
+
+	if(addr == 0x8001) { 
+		uint8_t key = keyb[keyb_front];
+		if(key != 0) keyb_front++;
+
+		return key;
+	}
 
 	return 0xff;
 }
@@ -38,8 +51,10 @@ void writeByte(uint16_t addr, uint8_t data, void *ctx) {
 	if(RAM_BASE < addr && addr < RAM_BASE+RAM_SIZE)
 		RAM[addr] = data;
 
-	if(addr == 0x8000)
+	if(addr == 0x8000 && data != 0) {
 		printf("%c", (char)data);
+		fflush(stdout);
+	}
 }
 
 
@@ -83,6 +98,16 @@ void *render(void *args) {
 		if(enableCPU) {
 			addr = context.pc;
 			data = readByte(addr, NULL);
+
+			if(IsKeyPressed(KEY_ENTER)) {
+				keyb[keyb_back++] = '\n';
+			}
+
+			int key = GetCharPressed();
+			while(key > 0) {
+				keyb[keyb_back++] = key;
+				key = GetCharPressed();
+			}
 		}
 
 		for(int i = 0; i < 16; ++i) {
