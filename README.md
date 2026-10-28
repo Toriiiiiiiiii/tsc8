@@ -12,3 +12,6 @@ This repository currently contains everything you need to run the initial design
 
 
 The `rom.bin` file is assembled using `cc65`. You must install this before trying to compile the ROM yourself.
+
+## Emulator
+The Emulator is a work-in-progress and is located in `emu/`. Currently, the emulator uses [MCS6502](https://github.com/bzotto/MCS6502) by bzotto on GitHub for the processor emulation. This is just for the initial version, something quick and dirty as a proof-of-concept. The final version of the emulator will use my own code to simulate the CPU.
