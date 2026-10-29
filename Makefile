@@ -10,7 +10,7 @@ CFLAGS = -g -c -Wall
 LDFLAGS = -lraylib
 
 ASMFLAGS = 
-ALDFLAGS = -Ctsc8-ld65.conf
+ALDFLAGS = -Ctsc8-ld65.conf --dbgfile romdbg
 
 SRC = $(wildcard rom/*.s)
 OBJ = obj/main.o

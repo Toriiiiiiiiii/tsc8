@@ -15,13 +15,7 @@ tty_out = $8000
 mon:	jsr clear
 
 		lda #0
-		sta int_lo
-		sta int_hi
-		sta putint_buf
-		sta putint_buf+1
-		sta putint_buf+2
-		sta putint_buf+3
-		
+
 		lda #'?'
 		sta tty_out
 
@@ -64,6 +58,9 @@ docmd:	sta tty_out
 		cmp #'e'    ; (E)xecute memory address
 		beq execat
 
+		cmp #'h'	; (H)elp
+		beq help
+
 		jmp mon
 
 readm:	jsr getint
@@ -94,10 +91,18 @@ readm:	jsr getint
 		tay
 		txa
 
-		lda #$20
-		sta tty_out
 		iny
-		cpy max
+		tya
+		and #%1111
+		bne @nocr
+
+		lda #$0a
+		sta tty_out
+		jmp @cont
+
+@nocr:	lda #$20
+		sta tty_out
+@cont:	cpy max
 		bne @loop
 
 		lda #$0a
@@ -127,6 +132,17 @@ writem: jsr getint
 
 execat: jsr getint
 		jmp (int_lo)
+
+help:	ldx #$00	
+@lp:	lda helpmsg,x
+		beq @dn
+		sta $8000
+		inx
+		jmp @lp
+@dn:	jmp mon
+
+helpmsg:
+		.ASCIIZ "How to use the monitor:\r\n  * r <addr> [n]: Print [n] bytes from <addr>\r\n  * w <addr> [dat]: Write [dat] to <addr>\r\n  * e <addr>: Start execution at <addr>\r\n\nAll values must be written in hexadecimal.\r\n"
 
 
 ; Read a 16-bit integer
@@ -256,3 +272,4 @@ clear:  ldy #$00
 		cpy #keyboard_size
 		bne @loop
 		rts
+
