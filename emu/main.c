@@ -47,7 +47,6 @@ uint8_t readByte(uint16_t addr, void *ctx) {
 	if(addr == 0x8001) { 
 		uint8_t key = keyb[keyb_front];
 		if(key != 0) keyb_front++;
-
 		return key;
 	}
 
@@ -82,6 +81,10 @@ void writeByte(uint16_t addr, uint8_t data, void *ctx) {
 		} else if(data == '\r') {
 			col = 0;
 			return;
+		} else if(data == '\b') {
+			col--;
+			if(col < 0) col = 0;
+			return;
 		}
 
 		tty[line][col++] = (char)data;
@@ -113,6 +116,9 @@ void *render(void *args) {
 	const int resetX  = 17*16;
 	const int resetY  = 3*16;
 
+	const int statusX = 30*16;
+	const int statusY = enableY + 16;
+
 	const int addressX = 2*16;
 	const int addressY = 7*16;
 	const int dataX = addressX + 16*16 + 32;
@@ -137,6 +143,8 @@ void *render(void *args) {
 		for(int i = 0; i < NLINES; ++i) {
 			DrawTextEx(fnt, tty[i], (Vector2){0, (float)(ttyY+16*i)}, 16, 1, WHITE);
 		}
+		const int cw = 640/NCOLS;
+		DrawRectangle((col*cw), ttyY + (line*16) + 14, cw, 2, WHITE);
 
 		if(enableCPU) {
 			addr = context.pc;
@@ -144,6 +152,10 @@ void *render(void *args) {
 
 			if(IsKeyPressed(KEY_ENTER)) {
 				keyb[keyb_back++] = '\n';
+			}
+
+			if(IsKeyPressed(KEY_BACKSPACE)) {
+				keyb[keyb_back++] = '\b';
 			}
 
 			int key = GetCharPressed();
@@ -166,6 +178,13 @@ void *render(void *args) {
 			int y = dataY;
 
 			int bit = (data >> (7-i)) & 1;
+			DrawTexturePro(bit? ledOn : ledOff, (Rectangle){0,0,8,8}, (Rectangle){x,y,16,16}, (Vector2){0,0}, 0, WHITE);
+		}	
+		for(int i = 0; i < 8; ++i) {
+			int x = statusX + (16*i);
+			int y = statusY;
+
+			int bit = (context.p >> (7-i)) & 1;
 			DrawTexturePro(bit? ledOn : ledOff, (Rectangle){0,0,8,8}, (Rectangle){x,y,16,16}, (Vector2){0,0}, 0, WHITE);
 		}	
 

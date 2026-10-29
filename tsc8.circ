@@ -94,7 +94,7 @@
     <a name="appearance" val="logisim_evolution"/>
     <a name="circuit" val="main"/>
     <a name="circuitnamedboxfixedsize" val="true"/>
-    <a name="simulationFrequency" val="2048000.0"/>
+    <a name="simulationFrequency" val="8.0"/>
     <comp lib="0" loc="(1040,970)" name="Pull Resistor">
       <a name="facing" val="north"/>
     </comp>
@@ -480,25 +480,73 @@
       <a name="addrWidth" val="13"/>
       <a name="appearance" val="classic"/>
       <a name="contents">addr/data: 13 8
-a5 0 c5 1 d0 4 c9 0
-f0 3 6c 0 0 a9 2f 85
-2 a9 e0 85 3 20 21 e0
-ad 1 80 8d 0 80 4c 18
-e0 a0 0 b1 2 f0 7 8d
-0 80 c8 4c 23 e0 60 4e
-6f 20 70 72 6f 67 72 61
-6d 20 66 6f 75 6e 64 20
-69 6e 20 52 41 4d 2e d
-a 50 6c 65 61 73 65 20
-77 72 69 74 65 20 61 20
-70 72 6f 67 72 61 6d 20
-74 6f 20 6d 65 6d 6f 72
-79 2c 20 77 72 69 74 65
-20 74 68 65 20 61 64 64
-72 65 73 73 20 74 6f 20
-24 4*30 20 61 6e 64 20 72
-65 73 65 74 2e d a 8043*0
-e0
+ad fe 7f cd ff 7f d0 4
+c9 0 f0 3 6c fe 7f a9
+ba 85 2 a9 e1 85 3 20
+1d e0 4c 2b e0 a0 0 b1
+2 f0 7 8d 0 80 c8 4c
+1f e0 60 20 ad e1 a9 0
+85 35 85 36 85 37 85 38
+85 39 85 3a a9 3f 8d 0
+80 a0 0 ad 1 80 f0 fb
+c9 a f0 1c c9 8 f0 e
+99 4 0 8d 0 80 c8 c0
+30 f0 d0 4c 43 e0 8d 0
+80 88 10 df c8 4c 43 e0
+8d 0 80 a0 0 20 a8 e1
+c9 20 f0 f9 c9 72 f0 b
+c9 77 f0 42 c9 65 f0 68
+4c 2b e0 20 ee e0 a9 1
+85 3d a5 35 85 3b a5 36
+85 3c e0 0 f0 7 20 ee
+e0 a5 35 85 3d a0 0 b1
+3b aa 98 48 8a 20 52 e1
+aa 68 a8 8a a9 20 8d 0
+80 c8 c4 3d d0 e9 a9 a
+8d 0 80 4c 2b e0 20 ee
+e0 e0 0 d0 3 4c 2b e0
+a5 35 85 3b a5 36 85 3c
+84 3d a4 3d 20 ee e0 84
+3d a0 0 a5 35 91 3b e6
+3b e0 0 d0 ed 4c 2b e0
+20 ee e0 6c 35 0 a9 0
+85 35 85 36 b9 4 0 c9
+20 d0 6 20 a8 e1 4c ee
+e0 a9 0 a2 0 20 a8 e1
+c9 0 f0 42 c9 20 f0 3c
+c9 30 30 3b f0 9 c9 61
+30 17 f0 8 4c 29 e1 a9
+0 4c 34 e1 a9 a 4c 34
+e1 18 e9 61 69 a 4c 34
+e1 38 e9 30 6 35 26 36
+6 35 26 36 6 35 26 36
+6 35 26 36 18 5 35 85
+35 4c 1 e1 a2 1 60 4c
+2b e0 a2 1 a0 0 84 3a
+84 37 84 38 c9 0 f0 3f
+4a 66 3a 4a 66 3a 4a 66
+3a 4a 66 3a 18 66 3a 66
+3a 66 3a 66 3a 18 a8 a5
+3a c9 a 30 8 e9 a 18
+69 41 4c 87 e1 69 30 95
+37 a9 0 85 3a ca 98 e0
+ff d0 cd a9 37 85 2 a9
+0 85 3 20 1d e0 60 a9
+30 8d 0 80 8d 0 80 60
+b9 4 0 c8 60 a0 0 a9
+0 99 4 0 c8 c0 30 d0
+f8 60 4e 6f 20 70 72 6f
+67 72 61 6d 20 66 6f 75
+6e 64 20 69 6e 20 52 41
+4d 20 28 56 65 63 74 6f
+72 20 24 37 66 66 65 20
+3d 20 24 4*30 29 2e d a
+44 65 66 61 75 6c 74 69
+6e 67 20 74 6f 20 6d 61
+63 68 69 6e 65 20 6c 61
+6e 67 75 61 67 65 20 6d
+6f 6e 69 74 6f 72 2e d
+a 7657*0 e0
 </a>
     </comp>
     <comp lib="6" loc="(1140,1200)" name="TTY">

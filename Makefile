@@ -1,3 +1,5 @@
+all: rom.bin tsc8
+
 ASM = ca65
 ALD = ld65
 
@@ -10,7 +12,7 @@ LDFLAGS = -lraylib
 ASMFLAGS = 
 ALDFLAGS = -Ctsc8-ld65.conf
 
-SRC = rom/main.s
+SRC = $(wildcard rom/*.s)
 OBJ = obj/main.o
 BIN = rom.bin
 
@@ -26,8 +28,8 @@ obj/e_%.o: emu/%.c $(EMUHDR)
 	$(CC) $(CFLAGS) -o $@ $<
 
 
-$(BIN): $(OBJ)
-	$(ALD) $(ALDFLAGS) -o $@ $^
+$(BIN): $(OBJ) $(SRC)
+	$(ALD) $(ALDFLAGS) -o $@ $<
 
-obj/%.o: rom/%.s
+obj/%.o: rom/%.s $(SRC)
 	$(ASM) $(ASMFLAGS) -o $@ $<
