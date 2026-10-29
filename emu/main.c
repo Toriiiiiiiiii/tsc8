@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <string.h>
 
 #include <raylib.h>
 
@@ -29,6 +30,13 @@ static uint8_t keyb[KEYB_BUFSIZE] = {0};
 static uint8_t keyb_front = 0;
 static uint8_t keyb_back = 0;
 
+#define NLINES 21
+#define NCOLS  71
+
+static char tty[NLINES][NCOLS+1] = {{0}};
+static int line = 0;
+static int col = 0;
+
 uint8_t readByte(uint16_t addr, void *ctx) {
 	if(RAM_BASE <= addr && addr < RAM_BASE+RAM_SIZE) 
 		return RAM[addr];
@@ -47,53 +55,88 @@ uint8_t readByte(uint16_t addr, void *ctx) {
 }
 
 
+void advanceTTY() {
+	line++;
+	col = 0;
+	if(line >= NLINES) {
+		for(int i = 0; i < NLINES-1; ++i) {
+			memcpy(tty[i], tty[i+1], NCOLS);
+		}
+		line--;
+		memset(tty[line], 0, NCOLS+1);
+	}
+}
+
+
 void writeByte(uint16_t addr, uint8_t data, void *ctx) {
 	if(RAM_BASE < addr && addr < RAM_BASE+RAM_SIZE)
 		RAM[addr] = data;
 
 	if(addr == 0x8000 && data != 0) {
-		printf("%c", (char)data);
-		fflush(stdout);
+		//printf("%c", data);
+		//fflush(stdout);
+
+		if(data == '\n') {
+			advanceTTY();
+			return;
+		} else if(data == '\r') {
+			col = 0;
+			return;
+		}
+
+		tty[line][col++] = (char)data;
+		
+		if(col >= NCOLS) advanceTTY();
 	}
 }
 
 
 void *render(void *args) {
+	SetTraceLogLevel(LOG_ERROR);
 	InitWindow(640, 480, "TSC-8 Emulator");
 	SetTargetFPS(60);
+
+	Texture bgTex = LoadTexture("asset/emu-bg.png");
+	Texture ledOff = LoadTexture("asset/emu-ledoff.png");
+	Texture ledOn = LoadTexture("asset/emu-ledon.png");
+
+	Font fnt = LoadFont("asset/departure-mono.otf");
 
 	uint16 addr = 0;
 	uint8  data = 0;
 
-	const int buttonSize = 25;
+	const int buttonSize = 16;
 
-	const int enableX = 50;
-	const int enableY = 30;
+	const int enableX = 22*16;
+	const int enableY = 16;
 
-	const int resetX  = 200;
-	const int resetY  = 30;
+	const int resetX  = 17*16;
+	const int resetY  = 3*16;
 
-	const int addressX = 30;
-	const int addressY = 90;
-	const int dataX = 30;
-	const int dataY = addressY+50;
+	const int addressX = 2*16;
+	const int addressY = 7*16;
+	const int dataX = addressX + 16*16 + 32;
+	const int dataY = addressY;
 
-	const int writeX = 30;
-	const int writeY = dataY + 50;
+	const int writeX = dataX + 8*16 + 16;
+	const int writeY = dataY;
+
+	const int ttyY = 9*16;
 
 	while(!WindowShouldClose()) {
 		BeginDrawing();
 		ClearBackground(GRAY);
 
-		DrawText("Enable CPU", 10, 10, 20, WHITE);
-		DrawText("Reset CPU", 150, 10, 20, WHITE);
-		DrawText("Address", 30, addressY-20, 20, WHITE);
-		DrawText("Data", 30, dataY-20, 20, WHITE);
-		DrawText("Write", 30, writeY-20, 20, WHITE);
+		DrawTexturePro(bgTex, (Rectangle){0,0,320,240}, (Rectangle){0,0,640,480}, (Vector2){0,0}, 0.0f, WHITE);
 
-		DrawRectangle(enableX, enableY, buttonSize, buttonSize, enableCPU? GREEN : RED);	
-		DrawRectangle(resetX, resetY, buttonSize, buttonSize, RED);	
-		DrawRectangle(writeX, writeY, buttonSize, buttonSize, RED);	
+		DrawTexturePro(enableCPU? ledOn : ledOff, (Rectangle){0,0,8,8}, (Rectangle){enableX,enableY,16,16}, (Vector2){0,0}, 0, WHITE);
+		DrawTexturePro(ledOff, (Rectangle){0,0,8,8}, (Rectangle){resetX,resetY,16,16}, (Vector2){0,0}, 0, WHITE);
+		DrawTexturePro(ledOff, (Rectangle){0,0,8,8}, (Rectangle){writeX,writeY,16,16}, (Vector2){0,0}, 0, WHITE);
+
+		// Draw TTY
+		for(int i = 0; i < NLINES; ++i) {
+			DrawTextEx(fnt, tty[i], (Vector2){0, (float)(ttyY+16*i)}, 16, 1, WHITE);
+		}
 
 		if(enableCPU) {
 			addr = context.pc;
@@ -111,19 +154,19 @@ void *render(void *args) {
 		}
 
 		for(int i = 0; i < 16; ++i) {
-			int x = addressX + (35*i);
+			int x = addressX + (16*i);
 			int y = addressY;
 
 			int bit = (addr >> (15-i)) & 1;
-			DrawRectangle(x, y, buttonSize, buttonSize, bit? GREEN : RED);
+			DrawTexturePro(bit? ledOn : ledOff, (Rectangle){0,0,8,8}, (Rectangle){x,y,16,16}, (Vector2){0,0}, 0, WHITE);
 		}	
 
 		for(int i = 0; i < 8; ++i) {
-			int x = dataX + (35*i);
+			int x = dataX + (16*i);
 			int y = dataY;
 
 			int bit = (data >> (7-i)) & 1;
-			DrawRectangle(x, y, buttonSize, buttonSize, bit? GREEN : RED);
+			DrawTexturePro(bit? ledOn : ledOff, (Rectangle){0,0,8,8}, (Rectangle){x,y,16,16}, (Vector2){0,0}, 0, WHITE);
 		}	
 
 		EndDrawing();
@@ -147,7 +190,7 @@ void *render(void *args) {
 
 			else if(!enableCPU) {
 				for(int i = 0; i < 16; ++i) {
-					int bx = addressX + (35*i);
+					int bx = addressX + (16*i);
 					int by = addressY;
 					if(x >= bx && x < bx+buttonSize && y >= by && y < by+buttonSize) {
 						int bit = (addr >> (15-i)) & 1;
@@ -158,7 +201,7 @@ void *render(void *args) {
 					}
 				}
 				for(int i = 0; i < 8; ++i) {
-					int bx = dataX + (35*i);
+					int bx = dataX + (16*i);
 					int by = dataY;
 					if(x >= bx && x < bx+buttonSize && y >= by && y < by+buttonSize) {
 						int bit = (data >> (7-i)) & 1;
