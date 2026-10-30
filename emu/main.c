@@ -289,7 +289,7 @@ int main(int argc, char **argv) {
 		clock_gettime(CLOCK_MONOTONIC_RAW, &start);
 		if(enableCPU && !cpuLock) {
 			cpuLock = 1;
-			MCS6502ExecNext(&context);
+			MCS6502Tick(&context);
 			cpuLock = 0;
 		}
 		uint64_t delta = 0;
