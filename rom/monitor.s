@@ -164,7 +164,7 @@ doload: jsr getint
 		rts
 
 helpmsg:
-		.ASCIIZ "How to use the monitor:\r\n  * r <addr> [n]: Print [n] bytes from <addr>\r\n  * w <addr> [dat]: Write [dat] to <addr>\r\n  * e <addr>: Start execution at <addr>\r\n\nAll values must be written in hexadecimal.\r\n"
+		.ASCIIZ "How to use the monitor:\r\n  * r <addr> [n]: Print [n] bytes from <addr>\r\n  * w <addr> [dat]: Write [dat] to <addr>\r\n  * e <addr>: Start execution at <addr>\r\n  * l <addr> [path]: Loads file [path] from storage device\r\n"
 
 
 ; Read a 16-bit integer
