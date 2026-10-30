@@ -18,6 +18,11 @@
 
 #define KEYB_BUFSIZE 256
 
+
+#define SDCTRL_ADDR 0x9000
+#define PATHSIZE    256
+
+
 static uint8_t RAM[RAM_SIZE] = {0};
 static uint8_t ROM[ROM_SIZE] = {0};
 static MCS6502ExecutionContext context;
@@ -29,6 +34,14 @@ static int enableCPU = 0;
 static uint8_t keyb[KEYB_BUFSIZE] = {0};
 static uint8_t keyb_front = 0;
 static uint8_t keyb_back = 0;
+
+
+static char sdctrl_path[PATHSIZE] = {0};
+static uint8_t path_ptr = 0;
+
+static FILE* sdctrl_file;
+static size_t file_size;
+static size_t file_ptr;
 
 #define NLINES 21
 #define NCOLS  71
@@ -48,6 +61,30 @@ uint8_t readByte(uint16_t addr, void *ctx) {
 		uint8_t key = keyb[keyb_front];
 		if(key != 0) keyb_front++;
 		return key;
+	}
+
+	if(addr == SDCTRL_ADDR) {
+		if(sdctrl_file) return 0xff;
+		return 0x00;
+	}
+
+	if(addr == SDCTRL_ADDR+1) {
+		if(!sdctrl_file) return 0x00;
+		
+		uint8_t byte;
+		fread(&byte, 1, 1, sdctrl_file);
+		file_ptr++;
+
+		if(file_ptr == file_size) {
+			printf("READ FINISHED\n");
+			fclose(sdctrl_file);
+			sdctrl_file = NULL;
+			
+			memset(sdctrl_path, 0, PATHSIZE);	
+			path_ptr = 0;
+		}
+
+		return byte;
 	}
 
 	return 0xff;
@@ -90,6 +127,25 @@ void writeByte(uint16_t addr, uint8_t data, void *ctx) {
 		tty[line][col++] = (char)data;
 		
 		if(col >= NCOLS) advanceTTY();
+	}
+	if(addr == SDCTRL_ADDR) {
+		if(data == 0xff) {
+			printf("READ STARTED\n");
+			sdctrl_file = fopen(sdctrl_path, "rb");
+			if(!sdctrl_file) {
+				perror(sdctrl_path);
+				return;
+			}
+
+			file_ptr = 0;
+			fseek(sdctrl_file, 0, SEEK_END);
+			file_size = ftell(sdctrl_file);
+			fseek(sdctrl_file, 0, SEEK_SET);
+			return;
+		}
+
+		sdctrl_path[path_ptr++] = data;	
+		sdctrl_path[path_ptr] = 0;
 	}
 }
 

@@ -1,20 +1,15 @@
 .FEATURE STRING_ESCAPES
 .SEGMENT "CART"
 
-PUTS = $e01f
-
-start:	lda #<msg
-		sta $02
-		lda #>msg
-		sta $03
-		jsr PUTS
-@hlt:	jmp @hlt
+start:	ldx #$00
+@lp:	lda msg,x
+		beq @hlt
+		sta $8000
+		inx
+		jmp @lp
+@hlt:	jmp $e100
 
 
 .SEGMENT "CARTDAT"
 
 msg: .ASCIIZ "Hello, World!\n"
-
-
-.SEGMENT "CARTVEC"
-.WORD start

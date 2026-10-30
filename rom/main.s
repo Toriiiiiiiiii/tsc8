@@ -1,6 +1,5 @@
 .FEATURE STRING_ESCAPES
 
-.SEGMENT "ZPG"
 .SEGMENT "CODE"
 
 start:	lda #<noprg_msg
@@ -23,13 +22,13 @@ puts:   ; Prints a string to serial terminal.
 
 @done:  rts
 
-.INCLUDE "monitor.s"
-
-
-.SEGMENT "DATA"
-
 noprg_msg: .ASCIIZ "TSC-8 ROM v0.1 ML Monitor.\r\nType 'h' then enter for a list of commands.\r\n"
 
+.SEGMENT "MONITOR"
+.INCLUDE "monitor.s"
+
+.SEGMENT "UTILS"
+.INCLUDE "utils.s"
 
 ; Define the vectors for the rom.
 ;  $fffa  = NMI vector

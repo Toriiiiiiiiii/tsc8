@@ -1,10 +1,10 @@
 keyboard_buffer = $04
-keyboard_size   = $30
+keyboard_size   = $40
 
-int_lo = $35
-int_hi = $36
+int_lo = $45
+int_hi = $46
 
-putint_buf = $37 ; 4 bytes
+putint_buf = $47 ; 4 bytes
 
 addr = putint_buf+4
 max  = addr+2
@@ -13,8 +13,6 @@ tty_in = $8001
 tty_out = $8000
 
 mon:	jsr clear
-
-		lda #0
 
 		lda #'?'
 		sta tty_out
@@ -61,9 +59,50 @@ docmd:	sta tty_out
 		cmp #'h'	; (H)elp
 		beq help
 
+		cmp #'l'	; (L)oad file
+		beq load
+
 		jmp mon
 
-readm:	jsr getint
+readm:	jsr doread
+		jmp mon
+writem: jsr getint
+		cpx #0
+		bne @dowr
+		jmp mon
+
+@dowr:	lda int_lo
+		sta addr
+		lda int_hi
+		sta addr+1
+		sty max
+	
+@lp:	ldy max
+		jsr getint
+		sty max
+		ldy #0
+		lda int_lo
+		sta (addr),y
+		inc addr
+		cpx #0		
+		bne @lp
+		jmp mon
+
+execat: jsr getint
+		jmp (int_lo)
+
+load:	jsr doload
+		jmp mon	
+
+help:	ldx #$00	
+@lp:	lda helpmsg,x
+		beq @dn
+		sta $8000
+		inx
+		jmp @lp
+@dn:	jmp mon
+
+doread: jsr getint
 		lda #1
 		sta max
 
@@ -107,39 +146,22 @@ readm:	jsr getint
 
 		lda #$0a
 		sta tty_out
-		jmp mon
-writem: jsr getint
-		cpx #0
-		bne @dowr
-		jmp mon
+		rts
 
-@dowr:	lda int_lo
-		sta addr
-		lda int_hi
-		sta addr+1
-		sty max
-	
-@lp:	ldy max
-		jsr getint
-		sty max
-		ldy #0
+doload: jsr getint
 		lda int_lo
-		sta (addr),y
-		inc addr
-		cpx #0		
-		bne @lp
-		jmp mon
+		sta $e5
+		lda int_hi
+		sta $e6
 
-execat: jsr getint
-		jmp (int_lo)
-
-help:	ldx #$00	
-@lp:	lda helpmsg,x
-		beq @dn
-		sta $8000
-		inx
-		jmp @lp
-@dn:	jmp mon
+		tya
+		clc
+		adc #$04
+		sta $e3
+		lda #0
+		sta $e4
+		jsr loadf
+		rts
 
 helpmsg:
 		.ASCIIZ "How to use the monitor:\r\n  * r <addr> [n]: Print [n] bytes from <addr>\r\n  * w <addr> [dat]: Write [dat] to <addr>\r\n  * e <addr>: Start execution at <addr>\r\n\nAll values must be written in hexadecimal.\r\n"
