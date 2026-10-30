@@ -8,8 +8,8 @@
 
 #include "MCS6502.h"
 
-#define CLOCK_FREQ 1000000
-#define MICROSECS  1000000
+#define CLOCK_FREQ 4000000
+#define NANOSECS   1000000000
 
 #define RAM_SIZE 0x8000
 #define ROM_SIZE 0x2000
@@ -293,9 +293,9 @@ int main(int argc, char **argv) {
 			cpuLock = 0;
 		}
 		uint64_t delta = 0;
-		while(delta < MICROSECS / CLOCK_FREQ) {
+		while(delta < NANOSECS / CLOCK_FREQ) {
 			clock_gettime(CLOCK_MONOTONIC_RAW, &end);
-			delta = (end.tv_sec - start.tv_sec) * 1000000 + (end.tv_nsec - start.tv_nsec) / 1000;
+			delta = (end.tv_sec - start.tv_sec) * 1000000000 + (end.tv_nsec - start.tv_nsec);
 		}
 	}
 }
